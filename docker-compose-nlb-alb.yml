@@ -1,0 +1,91 @@
+services:
+  network-load-balancer-nginx:
+    image: network-load-balancer-nginx
+    build:
+      context: 
+  client-react-nginx-1:
+    image: client-react-nginx
+    build:
+      context: ./client-react/
+      dockerfile: DockerfileAlb
+    init: true
+    networks:
+      - nlb
+      - alb-1
+    restart: unless-stopped
+  client-react-nginx-2:
+    image: client-react-nginx
+    build:
+      context: ./client-react/
+      dockerfile: DockerfileAlb
+    init: true
+    networks:
+      - nlb
+      - alb-2
+    restart: unless-stopped
+  api-node-1:
+    image: api-node
+    build:
+      context: ./api-node/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-1
+      - db-1
+    restart: unless-stopped
+  api-node-2:
+    image: api-node
+    build:
+      context: ./api-node/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-2
+      - db-2
+    restart: unless-stopped
+  api-golang-1:
+    image: api-golang
+    build:
+      context: ./api-golang/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-1
+      - db-1
+    restart: unless-stopped
+  api-golang-2:
+    image: api-golang
+    build:
+      context: ./api-golang/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-2
+      - db-2
+    restart: unless-stopped
+  db:
+    image: postgres:15.1-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=foobarbaz
+    networks:
+      - db-1
+      - db-2
+volumes:
+  pgdata:
+networks:
+  frontend:
+  backend:
