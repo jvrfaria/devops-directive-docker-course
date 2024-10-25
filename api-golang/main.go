@@ -32,13 +32,18 @@ func init() {
 
 func main() {
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		os.Exit(1)
+	}
+
 	r := gin.Default()
 	var tm time.Time
 
 	r.GET("/", func(c *gin.Context) {
 		tm = database.GetTime(c)
 		c.JSON(200, gin.H{
-			"api": "golang",
+			"api": hostname,
 			"now": tm,
 		})
 	})

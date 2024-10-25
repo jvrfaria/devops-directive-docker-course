@@ -2,12 +2,19 @@ services:
   network-load-balancer-nginx:
     image: network-load-balancer-nginx
     build:
-      context: 
+      context: ./nlb-nginx/
+      dockerfile: Dockerfile
+    init: true
+    networks:
+      - nlb
+    restart: unless-stopped
+    ports:
+      - 8080:8080
   client-react-nginx-1:
     image: client-react-nginx
     build:
       context: ./client-react/
-      dockerfile: DockerfileAlb
+      dockerfile: DockerfileNlbAlb
     init: true
     networks:
       - nlb
@@ -17,13 +24,13 @@ services:
     image: client-react-nginx
     build:
       context: ./client-react/
-      dockerfile: DockerfileAlb
+      dockerfile: DockerfileNlbAlb
     init: true
     networks:
       - nlb
       - alb-2
     restart: unless-stopped
-  api-node-1:
+  api-node-1-1:
     image: api-node
     build:
       context: ./api-node/
@@ -36,7 +43,22 @@ services:
       - alb-1
       - db-1
     restart: unless-stopped
-  api-node-2:
+    hostname: api-node-1
+  api-node-1-2:
+    image: api-node
+    build:
+      context: ./api-node/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-1
+      - db-1
+    restart: unless-stopped
+    hostname: api-node-2
+  api-node-2-1:
     image: api-node
     build:
       context: ./api-node/
@@ -49,7 +71,22 @@ services:
       - alb-2
       - db-2
     restart: unless-stopped
-  api-golang-1:
+    hostname: api-node-1
+  api-node-2-2:
+    image: api-node
+    build:
+      context: ./api-node/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-2
+      - db-2
+    restart: unless-stopped
+    hostname: api-node-2
+  api-golang-1-1:
     image: api-golang
     build:
       context: ./api-golang/
@@ -62,7 +99,22 @@ services:
       - alb-1
       - db-1
     restart: unless-stopped
-  api-golang-2:
+    hostname: api-golang-1
+  api-golang-1-2:
+    image: api-golang
+    build:
+      context: ./api-golang/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-1
+      - db-1
+    restart: unless-stopped
+    hostname: api-golang-2
+  api-golang-2-1:
     image: api-golang
     build:
       context: ./api-golang/
@@ -75,6 +127,21 @@ services:
       - alb-2
       - db-2
     restart: unless-stopped
+    hostname: api-golang-1
+  api-golang-2-2:
+    image: api-golang
+    build:
+      context: ./api-golang/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - alb-2
+      - db-2
+    restart: unless-stopped
+    hostname: api-golang-2
   db:
     image: postgres:15.1-alpine
     volumes:
@@ -87,5 +154,8 @@ services:
 volumes:
   pgdata:
 networks:
-  frontend:
-  backend:
+  nlb:
+  alb-1:
+  alb-2:
+  db-1:
+  db-2:
