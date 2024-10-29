@@ -1,0 +1,72 @@
+services:
+  bind9:
+    image: bind9
+    build:
+      context: ./bind9/
+    init: true
+    networks:
+      frontend:
+        ipv4_address: 172.19.0.2
+    dns: 127.0.0.1
+    restart: unless-stopped
+  client-react-nginx:
+    image: client-react-nginx
+    build:
+      context: ./client-react/
+      dockerfile: DockerfileDns
+    init: true
+    networks:
+      frontend:
+        ipv4_address: 172.19.0.3
+    dns: 172.19.0.2
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      - bind9
+  api-node:
+    image: api-node
+    build:
+      context: ./api-node/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      frontend:
+        ipv4_address: 172.19.0.4
+      backend:
+    restart: unless-stopped
+  api-golang:
+    image: api-golang
+    build:
+      context: ./api-golang/
+    init: true
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      frontend:
+        ipv4_address: 172.19.0.5
+      backend:
+    restart: unless-stopped
+  db:
+    image: postgres:15.1-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=foobarbaz
+    networks:
+      - backend
+volumes:
+  pgdata:
+networks:
+  frontend:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.0.0/24
+          gateway: 172.19.0.1
+  backend:

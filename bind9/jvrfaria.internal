@@ -1,0 +1,17 @@
+$TTL 2d    ; default TTL for zone
+$ORIGIN jvrfaria.internal. ; base domain-name
+; Start of Authority RR defining the key characteristics of the zone (domain)
+@         IN      SOA   ns.jvrfaria.internal. hostmaster.jvrfaria.internal. (
+                                2003080800 ; serial number
+                                12h        ; refresh
+                                15m        ; update retry
+                                4d         ; expiry
+                                2h         ; minimum
+                                )
+; name server RR for the domain
+           IN      NS      ns.jvrfaria.internal.
+; for instance a user query for the A RR of api-golang.jvrfaria.internal will
+; return the IPv4 address 192.168.254.6 from this zone file
+ns                IN      A       172.19.0.2
+api-node          IN      A       172.19.0.4
+api-golang        IN      A       172.19.0.5
