@@ -13,5 +13,6 @@ $ORIGIN jvrfaria.internal. ; base domain-name
 ; for instance a user query for the A RR of api-golang.jvrfaria.internal will
 ; return the IPv4 address 192.168.254.6 from this zone file
 ns                IN      A       172.19.0.2
+home              IN      a       172.19.0.3
 api-node          IN      A       172.19.0.4
 api-golang        IN      A       172.19.0.5
