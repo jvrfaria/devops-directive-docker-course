@@ -2,6 +2,7 @@
 **/.npm
 *.un~
 *.json~
+*.pem
 
 .DS_Store
 **/tmp
